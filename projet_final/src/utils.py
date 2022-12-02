@@ -7,6 +7,7 @@ import xlwings as xw
 
 from shutil import copyfileobj
 from urllib import request
+from matplotlib.cm import get_cmap
 
 
 
@@ -116,3 +117,30 @@ def save_with_xlwings(file, dir_dst=''):
 
 
 
+def generate_color_categories(categories, rgb=True):
+    """ Generate n colors, useful for coloring different categories 
+    Args:
+        categories (Array of strings): categories to process
+    Returns:
+        color_map (Dictionary): contains color for each category
+    """
+    ncol = len(categories)
+    if ncol <= 50:
+        colors = [i for i in get_cmap('tab20b').colors]
+        colors += [i for i in get_cmap('tab20c').colors]
+        colors += [i for i in get_cmap('tab20c_r').colors]
+        colors = colors[:ncol]
+    elif 50 < ncol <= 256:
+        cmap = get_cmap(name='viridis')
+        cmap = get_cmap(name='rainbow')
+        colors = cmap(np.linspace(0, 1, ncol))
+    else:
+        raise ValueError('Maximum 256 categories')
+    
+    color_map = {}
+    for i, key in enumerate(categories):
+        if rgb:
+            color_map[key] = 'rgb({r},{g},{b})'.format(r=colors[i][0], g=colors[i][1], b=colors[i][2])
+        else:
+            color_map[key] = colors[i][:3]
+    return color_map
